@@ -49,6 +49,33 @@ describe Shog::Formatter do
       output = formatter.call "DEBUG", "NOW", "proggy", "gets them all"
       expect( output ).to eq "[NOW] [proggy] [DEBUG] gets them all\n"
     end
+
+    it "has the ability to configure timestamp format" do
+      formatter.configure do
+        timestamp { |ts| "foo#{ts}bar".blue }
+      end
+
+      output = formatter.call "DEBUG", "NOW", "proggy", "gets them all"
+      expect( output ).to eq "[#{"fooNOWbar".blue}] gets them all\n"
+    end
+
+    it "has the ability to switch off timestamp via false parameter" do
+      formatter.configure do
+        timestamp(false) { |ts| "foo#{ts}bar".blue }
+      end
+
+      output = formatter.call "DEBUG", "NOW", "proggy", "gets them all"
+      expect( output ).to eq "gets them all\n"
+    end
+
+    it "has the ability to configure timestamp format via explicit block parameter" do
+      formatter.configure do
+        timestamp(true, ->(ts){ "foo#{ts}bar".blue })
+      end
+
+      output = formatter.call "DEBUG", "NOW", "proggy", "gets them all"
+      expect( output ).to eq "[#{"fooNOWbar".blue}] gets them all\n"
+    end
   end
 
   describe "#formatted_severity_tag" do

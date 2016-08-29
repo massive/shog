@@ -22,13 +22,25 @@ module Shog
       return if msg.blank? || _silence?( msg )
 
       msg = [
-        _tagged( time, :timestamp ),
+        formatted_timestamp( time ),
         _tagged( progname, :progname ),
         formatted_severity_tag( severity ),
         formatted_message( severity, msg )
       ].compact.join(" ")
 
       super severity, time, progname, msg
+    end
+
+    def formatted_timestamp( timestamp )
+      config = configuration[:timestamp]
+
+      formatted = if config.respond_to?(:call)
+                    config.call timestamp
+                  elsif config
+                    timestamp
+                  end
+
+      _tagged formatted, :timestamp
     end
 
     # Formats the message according to the configured {#match} blocks.
@@ -255,8 +267,9 @@ module Shog
     # Include timestamp in logged messages.
     # @param [Boolean] enable or disable timestamping of log messages.
     # @return [Formatter] self.
-    def timestamp( enable = true )
-      configuration[:timestamp] = enable
+    def timestamp( enable = true, proc = nil, &block )
+      proc ||= block
+      configuration[:timestamp] = enable ? proc || enable : false
       self
     end
 
